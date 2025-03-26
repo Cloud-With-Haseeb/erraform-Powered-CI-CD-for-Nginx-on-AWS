@@ -8,8 +8,13 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-1" # Ensure this matches your desired AWS region
+  region     = "ap-south-1"
+  access_key = var.AWS_ACCESS_KEY_ID
+  secret_key = var.AWS_SECRET_ACCESS_KEY
 }
+
+variable "AWS_ACCESS_KEY_ID" {}
+variable "AWS_SECRET_ACCESS_KEY" {}
 
 resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/16"
@@ -21,7 +26,7 @@ resource "aws_vpc" "my_vpc" {
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "ap-south-1a" # Ensure this AZ is in your selected region
+  availability_zone       = "ap-south-1a"
   map_public_ip_on_launch = true
   tags = {
     Name = "Public Subnet"
@@ -59,12 +64,12 @@ resource "aws_security_group" "nginx_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Open to the world; consider restricting this in production
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1" # Allows all outbound traffic
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
@@ -73,7 +78,7 @@ resource "aws_security_group" "nginx_sg" {
 }
 
 resource "aws_instance" "nginx_server" {
-  ami                    = "ami-09b0a86a2c84101e1" # Ubuntu 20.04 LTS in ap-south-1
+  ami                    = "ami-09b0a86a2c84101e1"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.nginx_sg.id]
